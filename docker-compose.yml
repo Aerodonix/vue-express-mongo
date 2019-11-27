@@ -1,0 +1,38 @@
+version: "3"
+services:
+
+  express:
+    build: ./server/express
+    user: "node"
+    volumes:
+      - ./src/express:/var/www/express
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    command: sh /sbin/startup-express.sh
+
+  db:
+    image: mongo
+    command: mongod
+    # volumes:
+    #   - ./src/mongo:/data/db
+    # ports:
+    #   - "27017:27017"
+    healthcheck:
+      test: ["CMD", "echo", "show dbs", "|", "mongo"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  vue:
+    build: ./client/vue
+    command: sh /sbin/startup-vue.sh
+    volumes:
+      - ./src/vue:/var/www/vue
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "8080:8080"
